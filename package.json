@@ -1,0 +1,31 @@
+{
+  "name": "vizualizer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Turn mathematical questions into interactive visualizations, running locally with your own Codex account.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node scripts/start.mjs",
+    "dev": "node --watch server.js",
+    "test": "node --test test/*.test.js",
+    "benchmark:prewarm": "node test/prewarm-benchmark.mjs",
+    "test:browser": "node test/browser.mjs && node test/helpers-browser.mjs"
+  },
+  "dependencies": {
+    "acorn": "^8.19.0",
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "parse5": "^8.0.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0"
+  },
+  "license": "MIT",
+  "os": [
+    "darwin",
+    "linux"
+  ]
+}

@@ -1,0 +1,50 @@
+import { chromium, expect } from '@playwright/test';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import os from 'node:os';
+import { fileURLToPath } from 'node:url';
+import { start } from '../server.js';
+import { Generator } from '../lib/generator.js';
+const stateDir = await fs.mkdtemp(path.join(os.tmpdir(), '.math-lab-helpers-'));
+const fixture = fileURLToPath(new URL('./fake-codex.mjs', import.meta.url));
+await fs.chmod(fixture, 0o755);
+const app = await start({ port: 0, artifactPort: 0, stateDir, seed: false, generator: new Generator({ bin: fixture }) });
+const browser = await chromium.launch();
+try {
+  const page = await browser.newPage({ viewport: { width: 1100, height: 900 } });
+  const errors = []; page.on('pageerror', e => errors.push(e.message));
+  await page.goto(app.url); await page.locator('#new-project').click();
+  await expect(page.locator('#prompt')).toBeEnabled();
+  await page.locator('#prompt').fill('HELPER_TEST'); await page.locator('#generate-button').click();
+  await expect(page.locator('#generate-label')).toHaveText('Update visualization', { timeout: 15000 });
+  const frame = page.frameLocator('#visualization-frame');
+  await expect(frame.locator('.mathlab-slider')).toBeVisible();
+  await frame.locator('input[type=range]').fill('2');
+  await expect(frame.locator('#value')).toHaveText('2');
+  await expect(frame.locator('input[type=number]')).toHaveValue('2');
+  const transform = await frame.locator('#plot').evaluate(canvas => {
+    const context = canvas.getContext('2d'); return { width: canvas.width, scale: context.getTransform().a };
+  });
+  expect(transform.width).toBeGreaterThan(100); expect(transform.scale).toBeGreaterThanOrEqual(1);
+  const coordinates = await frame.locator('body').evaluate(async body => {
+    const { createPlot } = await import('./mathlab/v3/canvas.js');
+    const canvas = document.createElement('canvas'); canvas.style.cssText = 'width:200px;height:200px'; body.append(canvas);
+    const plot = createPlot(canvas, { bounds: [-2, 2, -2, 2] });
+    const screen = plot.toScreen(1, -1), world = plot.toWorld(...screen);
+    const result = { array: Array.isArray(screen), namedX: screen.x === screen[0], namedY: screen.y === screen[1], worldX: world.x, worldY: world.y };
+    plot.destroy(); canvas.remove(); return result;
+  });
+  expect(coordinates).toEqual({ array: true, namedX: true, namedY: true, worldX: 1, worldY: -1 });
+  await frame.locator('#play').click(); await expect(frame.locator('#value')).toHaveText('done');
+  await frame.locator('#reset').click(); await expect(frame.locator('#value')).toHaveText('1');
+  const boundsBefore = await frame.locator('#plot').boundingBox();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(async () => expect((await frame.locator('#plot').boundingBox()).width).toBeLessThan(boundsBefore.width)).toPass();
+  await page.reload(); await expect(frame.locator('.mathlab-slider')).toBeVisible();
+  await page.locator('#source-tab').click();
+  await expect(page.locator('#source-file option')).toHaveCount(5);
+  await page.locator('#source-file').selectOption('mathlab/v3/canvas.js');
+  await expect(page.locator('#source-content')).toContainText('export function createPlot');
+  expect(errors).toEqual([]);
+  console.log('Vendored helpers passed: sandbox ESM/CSS, canvas rendering, synchronized slider, animation/reset, responsive resizing, source persistence and reopen.');
+} finally { await browser.close(); await app.close(); await fs.rm(stateDir, { recursive: true, force: true }); }
