@@ -1,4 +1,4 @@
-# vizualizer
+# vizualearner
 
 The full **vizualearner** app. See it. Understand it.
 
@@ -11,7 +11,7 @@ This repository contains **only the app**. The public demo website is a separate
 Install [Node.js 22 or later](https://nodejs.org/) (npm is included), clone this repository, and run:
 
 ```sh
-cd vizualizer
+cd vizualearner
 npm start
 ```
 

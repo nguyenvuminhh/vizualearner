@@ -6,7 +6,7 @@ import path from 'node:path';
 import {needsInstall} from '../scripts/start.mjs';
 
 test('fresh clones need installation; matching runtime dependencies do not; lockfile changes are detected',async()=>{
- const root=await fs.mkdtemp(path.join(os.tmpdir(),'vizualizer-startup-'));
+ const root=await fs.mkdtemp(path.join(os.tmpdir(),'vizualearner-startup-'));
  try{
   await fs.writeFile(path.join(root,'package.json'),JSON.stringify({dependencies:{express:'^5.1.0'}}));
   await fs.writeFile(path.join(root,'package-lock.json'),JSON.stringify({packages:{'node_modules/express':{version:'5.1.0'}}}));

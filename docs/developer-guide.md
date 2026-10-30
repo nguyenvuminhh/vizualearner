@@ -7,7 +7,7 @@ A local mathematics laboratory powered by your installed Codex CLI. Describe any
 Requires **Node.js 22+**. AI generation additionally requires an installed, signed-in **Codex CLI** supporting `exec`, `exec resume`, JSON events, and `--output-schema` (tested with 0.160.0).
 
 ```sh
-cd vizualizer
+cd vizualearner
 npm start    # installs missing runtime dependencies automatically
 ```
 
