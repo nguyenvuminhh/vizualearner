@@ -11,6 +11,7 @@ This repository contains **only the app**. The public demo website is a separate
 Install [Node.js 22 or later](https://nodejs.org/) (npm is included), clone this repository, and run:
 
 ```sh
+git clone https://github.com/nguyenvuminhh/vizualearner.git
 cd vizualearner
 npm start
 ```
@@ -21,14 +22,14 @@ The included interactive example works without a Codex login. You can also run `
 
 ## Enable your own AI generations
 
-Install and sign in to [Codex CLI](https://learn.chatgpt.com/docs/cli):
+The integration has been tested with Codex CLI **0.160.0**. Install and sign in to [Codex CLI](https://learn.chatgpt.com/docs/cli):
 
 ```sh
 npm install -g @openai/codex
 codex login
 ```
 
-Then use **Check connection again** in the app. Each user uses their own installed CLI, account and provider configuration. No developer API key or account credentials are included. Your own provider charges and usage limits apply. The app’s prepared sessions can consume account usage at startup; set `MATH_LAB_PREWARM=0` to disable them.
+Then use **Check connection again** in the app. Each user uses their own installed CLI, account and provider configuration. No developer API key or account credentials are included. Your own provider charges and usage limits apply. By default, the app makes AI calls only when you request a generation. Advanced users can opt into background preparation with `MATH_LAB_PREWARM=1`; this consumes account usage at startup.
 
 Supported platforms: **macOS and Linux**. On Windows, use **WSL** and run the commands there. Native Windows startup is not currently supported.
 
@@ -43,7 +44,7 @@ Generated mathematics can be wrong. Verify equations, assumptions and numerical 
 
 ## Local files and privacy
 
-By default, `.local/workspace` holds projects, source revisions, conversations and attachments. An external workspace can be selected in the app. Back up your workspaces and preserve `.local` when updating the app.
+By default, `.local/workspace` holds projects, source revisions, conversations and attachments. An external workspace can be selected in the app. Back up your workspaces and preserve `.local` when updating the app. Each workspace can be opened by one app process at a time. After a forced termination, allow 10 seconds for its ownership lease to expire before restarting.
 
 The app binds to loopback and is intended for one local user. Do not expose its ports publicly. During a generation, prompts, relevant source and attachments are sent through your configured Codex provider. Generated visualizations run in a sandboxed frame on a separate local origin. Local project/account data and dependencies are excluded from Git.
 
@@ -67,12 +68,12 @@ After a fresh `npm start`, only runtime dependencies are installed; use `npm ci`
 | `ARTIFACT_PORT` | `3211` | Separate visualization origin |
 | `CODEX_BIN` | `codex` | Installed Codex executable |
 | `MATH_LAB_STATE` | `.local` beside the app | App state directory |
-| `MATH_LAB_PREWARM` | `1` | Set `0` to disable prepared sessions |
+| `MATH_LAB_PREWARM` | `0` | Set `1` to opt into background preparation; consumes account usage |
 | `GENERATION_TIMEOUT_MS` | `900000` | AI generation timeout |
 
-## Publish the source later
+## Source and contributions
 
-This checkout is prepared locally. No repository has been created on GitHub and nothing has been pushed or deployed. See [publication instructions](docs/PUBLISHING.md), [contribution guidance](CONTRIBUTING.md), and [security guidance](SECURITY.md).
+The public app repository is [nguyenvuminhh/vizualearner](https://github.com/nguyenvuminhh/vizualearner). See [release guidance](docs/PUBLISHING.md), [contribution guidance](CONTRIBUTING.md), and [security guidance](SECURITY.md).
 
 ## License
 

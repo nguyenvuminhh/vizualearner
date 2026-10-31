@@ -1,5 +1,6 @@
 node_modules/
 .local/
+.vizualearner-*.lock/
 playwright-report/
 test-results/
 .DS_Store

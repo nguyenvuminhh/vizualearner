@@ -23,7 +23,7 @@ test('minimal execution excludes global workflow catalogs while retaining accoun
 
 test('generator forks a ready seed, resumes only its child, and recovers a missing seed', async () => {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'math-lab-prepared-workflow-'));
-  const generator = new Generator({ bin, timeout: 10000 });
+  const generator = new Generator({ bin, timeout: 10000, prewarm: true });
   try {
     await generator.initialize(dir);
     const seed = await generator.prepare();
@@ -86,7 +86,7 @@ const args=process.argv.slice(2);
 if(args.includes('login')) process.exit(fs.existsSync(${JSON.stringify(marker)})?0:1);
 const child=spawnSync(${JSON.stringify(bin)},args,{stdio:'inherit'});process.exit(child.status??1);
 `, { mode: 0o755 });
-  const app = await start({ port: 0, artifactPort: 0, stateDir: dir, seed: false, generator: new Generator({ bin: wrapper }) });
+  const app = await start({ port: 0, artifactPort: 0, stateDir: dir, seed: false, generator: new Generator({ bin: wrapper, prewarm: true }) });
   try {
     const config = await fetch(app.url + '/api/config').then(r => r.json());
     assert.equal(config.codex.authenticated, false);

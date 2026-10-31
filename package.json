@@ -12,15 +12,17 @@
     "dev": "node --watch server.js",
     "test": "node --test test/*.test.js",
     "benchmark:prewarm": "node test/prewarm-benchmark.mjs",
-    "test:browser": "node test/browser.mjs && node test/helpers-browser.mjs"
+    "test:browser": "node test/browser.mjs && node test/helpers-browser.mjs && node test/accessibility-browser.mjs"
   },
   "dependencies": {
     "acorn": "^8.19.0",
     "express": "^5.1.0",
     "multer": "^2.0.2",
-    "parse5": "^8.0.1"
+    "parse5": "^8.0.1",
+    "proper-lockfile": "^4.1.2"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.56.0"
   },
   "license": "MIT",

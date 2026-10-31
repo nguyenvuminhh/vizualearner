@@ -1,4 +1,4 @@
-export const palette = {"background":"#eef2f7","surface":"#f9fbfd","card":"#e9eff6","foreground":"#151d2a","muted":"#535f70","subtle":"#687889","border":"#c9d1dc","grid":"#dce4ed","axis":"#8c9aab","accent":"#00678b","accent-strong":"#005574","accent-soft":"#dcecf4","secondary":"#178577","success-soft":"#e4f2ee","warning":"#986018","warning-soft":"#fff3df","danger":"#b3434b","danger-soft":"#fbe9ec"};
+export const palette = {"background":"#eef2f7","surface":"#f9fbfd","card":"#e9eff6","foreground":"#151d2a","muted":"#535f70","subtle":"#485768","border":"#c9d1dc","grid":"#dce4ed","axis":"#8c9aab","accent":"#00678b","accent-strong":"#005574","accent-soft":"#dcecf4","secondary":"#116e62","success-soft":"#e4f2ee","warning":"#986018","warning-soft":"#fff3df","danger":"#b3434b","danger-soft":"#fbe9ec"};
 export const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 export function formatNumber(value, digits = 3) {
   if (!Number.isFinite(value)) return String(value);

@@ -141,6 +141,8 @@ function render() {
   $('source-panel').hidden = !hasSource || tab !== 'source';
   $('visual-tab').classList.toggle('active', tab === 'visual'); $('visual-tab').setAttribute('aria-selected', tab === 'visual');
   $('source-tab').classList.toggle('active', tab === 'source'); $('source-tab').setAttribute('aria-selected', tab === 'source');
+  $('visual-tab').tabIndex = tab === 'visual' ? 0 : -1;
+  $('source-tab').tabIndex = tab === 'source' ? 0 : -1;
   if (hasSource && revision) {
     const url = `${config.artifactOrigin}/view/${current.id}/${revision.id}/index.html`;
     if (loadedFrame !== url) { frameError = null; frameMeasurement = { projectId: current.id, revision: revision.id, url, started: performance.now() }; $('visualization-frame').src = url; loadedFrame = url; }
@@ -211,6 +213,15 @@ bind('file-input', e => { addFiles([...e.target.files]); e.target.value = ''; },
 bind('attachment-list', e => { const el = e.target.closest('[data-remove-file]'); if (el) { files.splice(Number(el.dataset.removeFile), 1); renderAttachments(); } });
 bind('visual-tab', () => { tab = 'visual'; render(); });
 bind('source-tab', async () => { tab = 'source'; render(); await readSource(); });
+document.querySelector('[role="tablist"]').addEventListener('keydown', e => {
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+  const tabs = [...document.querySelectorAll('[role="tab"]')].filter(button => !button.disabled);
+  const index = tabs.indexOf(document.activeElement);
+  if (index < 0) return;
+  e.preventDefault();
+  const next = e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : (index + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+  tabs[next].focus(); tabs[next].click();
+});
 bind('source-file', readSource, 'change');
 bind('revision-select', async e => { previewRevision = e.target.value; render(); if (tab === 'source') await readSource(); }, 'change');
 bind('reload-frame', () => { frameError = null; const frame = $('visualization-frame'); frameMeasurement = { projectId: current.id, revision: previewRevision || current.currentRevision, url: frame.src, started: performance.now() }; frame.src = frame.src; render(); });
