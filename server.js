@@ -127,13 +127,18 @@ export async function start({ port = Number(process.env.PORT) || 3210, artifactP
         res.json(config);
       } finally { await nextRelease?.(); switchingWorkspace = false; }
     });
-    app.get('/api/projects', async (req, res) => res.json(await listProjects(config.workspace)));
+    app.get('/api/projects', async (req, res) => {
+      const root = config.workspace;
+      const projects = await listProjects(root);
+      res.json(projects.map(p => ({ ...p, status: generator.busy(root, p.id) ? 'generating' : p.status })));
+    });
     app.post('/api/projects', async (req, res) => res.status(201).json(await createProject(config.workspace)));
     app.get('/api/projects/:id', async (req, res) => {
       const p = await loadProject(config.workspace, req.params.id);
       const job = generator.jobs.get(generator.key(config.workspace, p.id));
       const renderMetrics = p.currentRevision ? await json(path.join(projectDir(config.workspace, p.id), 'revisions', p.currentRevision, 'render.json'), null) : null;
-      res.json({ ...presentProject(p), progress: job?.progress || null, renderMetrics });
+      // A final disk snapshot can precede cleanup; completion must mean a follow-up is accepted.
+      res.json({ ...presentProject(p), status: job ? 'generating' : p.status, progress: job?.progress || null, renderMetrics });
     });
     app.post('/api/projects/:id/revisions/:revision/render', async (req, res) => {
       const p = await loadProject(config.workspace, req.params.id);
