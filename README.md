@@ -1,6 +1,6 @@
 # vizualearner
 
-The full **vizualearner** app. See it. Understand it.
+The full **vizualearner** app. See it. Understand it. Try the prepared examples at [vizualearner.duckdns.org](https://vizualearner.duckdns.org).
 
 Describe a mathematical question, attach reference material, and explore an interactive visualization built by your installed Codex CLI. Follow up to change the same project; conversations, source files and earlier versions stay together on your computer.
 
