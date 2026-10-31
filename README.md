@@ -4,6 +4,8 @@ The full **vizualearner** app. See it. Understand it. Try the prepared examples 
 
 Describe a mathematical question, attach reference material, and explore an interactive visualization built by your installed Codex CLI. Follow up to change the same project; conversations, source files and earlier versions stay together on your computer.
 
+Currently works with **Codex CLI**. Claude Code and API-based integrations are planned.
+
 This repository contains **only the app**. The public demo website is a separate repository.
 
 ## Clone, then start
