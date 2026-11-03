@@ -28,7 +28,7 @@ A real follow-up to the prepared child changed its heading with a 360-byte patch
 
 Benchmark artifacts are generated under the ignored `.local/prewarm-benchmark/` directory. They can include requests, persistent projects, source, events, screenshots and follow-up records; do not publish them.
 
-`npm run benchmark:prewarm` repeats the paired minimal-cold/prepared experiment using the real account. It consumes model usage and writes a separate timestamped directory. Use `MATH_LAB_PREWARM=0` to retain minimal execution without preparation, or `MATH_LAB_MINIMAL=0` to restore the original environment. Existing projects retain their history; test the clean prepared path with a **new visualization**.
+`npm run benchmark:prewarm` repeats the paired minimal-cold/prepared experiment using the real account. It consumes model usage and writes a separate timestamped directory. Use `VIZUALEARNER_PREWARM=0` to retain minimal execution without preparation, or `VIZUALEARNER_MINIMAL=0` to restore the original environment. Existing projects retain their history; test the clean prepared path with a **new visualization**.
 
 After benchmarking, review replaced individual plugin/server disable flags with equivalent whole-table overrides so valid dotted configuration names also work. `codex debug prompt-input` confirmed the resulting prompt omitted the global skills catalog. A separate real fork using the final configuration built a compact unit circle in 32.44 s with no shell calls; its SVG updated when the Angle slider changed, without browser errors. Artifacts are in `.local/prewarm-final-smoke/`.
 

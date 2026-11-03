@@ -8,7 +8,7 @@ import { start } from '../server.js';
 import { Generator } from '../lib/generator.js';
 
 test('exact saved matches create independent projects; bypass, settings, attachments and runtime failures prevent reuse', async t => {
-  const stateDir = await fs.mkdtemp(path.join(os.tmpdir(), '.math-lab-match-'));
+  const stateDir = await fs.mkdtemp(path.join(os.tmpdir(), '.vizualearner-match-'));
   const fixture = fileURLToPath(new URL('./fake-codex.mjs', import.meta.url)); await fs.chmod(fixture, 0o755);
   const app = await start({ port: 0, artifactPort: 0, stateDir, seed: false, generator: new Generator({ bin: fixture }) });
   t.after(async () => { await app.close(); await fs.rm(stateDir, { recursive: true, force: true }); });

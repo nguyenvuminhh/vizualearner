@@ -105,10 +105,10 @@ test('expired leases from a killed process permit interrupted-work recovery', as
 
 test('default startup does not prepare a paid Codex session', async () => {
   const stateDir = await fs.mkdtemp(path.join(os.tmpdir(), 'vizualearner-no-prewarm-'));
-  const previous = process.env.MATH_LAB_PREWARM;
-  delete process.env.MATH_LAB_PREWARM;
+  const previous = process.env.VIZUALEARNER_PREWARM;
+  delete process.env.VIZUALEARNER_PREWARM;
   const generator = new Generator({ bin });
-  if (previous !== undefined) process.env.MATH_LAB_PREWARM = previous;
+  if (previous !== undefined) process.env.VIZUALEARNER_PREWARM = previous;
   const app = await start({ stateDir, port: 0, artifactPort: 0, generator });
   try {
     assert.equal((await config(app)).codex.authenticated, true);

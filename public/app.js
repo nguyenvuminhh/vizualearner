@@ -28,9 +28,9 @@ async function api(url, { body, method = 'GET', ...options } = {}) {
   return response.json();
 }
 function bind(id, fn, event = 'click') { $(id).addEventListener(event, async e => { try { await fn(e); } catch (error) { toast(error.message, true); } }); }
-function savedKey() { return `math-lab:selected:${config.workspace}`; }
-function draftKey(pid) { return `math-lab:draft:${config.workspace}:${pid}`; }
-function settingsKey(pid) { return `math-lab:settings:${config.workspace}:${pid}`; }
+function savedKey() { return `vizualearner:selected:${config.workspace}`; }
+function draftKey(pid) { return `vizualearner:draft:${config.workspace}:${pid}`; }
+function settingsKey(pid) { return `vizualearner:settings:${config.workspace}:${pid}`; }
 function refreshEfforts() {
   const selected = $('effort-select').value;
   const known = config.models?.find(m => m.id === $('model-input').value.trim());
@@ -43,7 +43,7 @@ function restoreSettings() {
   const settings = saved || current.generationSettings || {};
   $('model-input').value = settings.model || '';
   refreshEfforts(); $('effort-select').value = settings.effort || '';
-  $('use-saved-match').checked = current.useSavedMatch ?? localStorage.getItem('math-lab:use-saved-match') === 'true';
+  $('use-saved-match').checked = current.useSavedMatch ?? localStorage.getItem('vizualearner:use-saved-match') === 'true';
 }
 function saveSettings() {
   if (current) localStorage.setItem(settingsKey(current.id), JSON.stringify({ model: $('model-input').value.trim(), effort: $('effort-select').value }));
@@ -187,13 +187,54 @@ function addFiles(incoming) {
   if (incoming.some(f => f.size > 20 * 1024 * 1024)) return toast('Each attachment must be 20 MB or smaller.', true);
   files.push(...incoming); renderAttachments();
 }
+function syncThemeButton() {
+  const dark = document.documentElement.dataset.theme === 'dark';
+  $('theme-toggle').setAttribute('aria-label', `Switch to ${dark ? 'light' : 'dark'} mode`);
+  $('theme-toggle').title = `Switch to ${dark ? 'light' : 'dark'} mode`;
+  document.querySelector('meta[name="theme-color"]').content = dark ? '#101722' : '#eef2f7';
+  const frame = $('visualization-frame');
+  if (frame.contentWindow) frame.contentWindow.postMessage({type:'vizualearner-theme', theme:dark ? 'dark' : 'light'}, '*');
+}
+syncThemeButton();
+new MutationObserver(syncThemeButton).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+bind('theme-toggle', () => {
+  const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('vizualearner:theme', theme); document.documentElement.dataset.theme = theme;
+});
+$('visualization-frame').addEventListener('load', syncThemeButton);
+async function refreshLimits(force = false) {
+  $('refresh-limits').disabled = true;
+  try {
+    const data = await api('/api/codex/limits' + (force ? '?refresh=1' : ''));
+    const buckets = Object.values(data.rateLimitsByLimitId || (data.rateLimits ? {codex:data.rateLimits} : {}));
+    const rows = buckets.flatMap(bucket => ['primary', 'secondary'].flatMap(key => {
+      const window = bucket[key];
+      if (!window || !Number.isFinite(window.usedPercent)) return [];
+      const mins = window.windowDurationMins;
+      const label = mins >= 1440 ? `${mins / 1440} day` : mins >= 60 ? `${mins / 60} hour` : mins ? `${mins} min` : key === 'primary' ? 'Primary' : 'Secondary';
+      const remaining = Math.max(0, Math.min(100, 100 - window.usedPercent));
+      const reset = Number.isFinite(window.resetsAt) ? new Date(window.resetsAt * 1000).toLocaleString(undefined, {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : null;
+      return [`<div class="quota-window"><span>${escape(bucket.limitName || bucket.limitId || 'Codex')} · ${escape(label)}</span><strong>${remaining}% remaining</strong><progress max="100" value="${remaining}" aria-label="${escape(label)} allowance remaining"></progress>${reset ? `<small>Resets ${escape(reset)}</small>` : ''}</div>`];
+    }));
+    $('codex-limits').innerHTML = rows.length ? rows.join('') : escape(data.detail || 'No account limits reported.');
+  } catch { $('codex-limits').textContent = 'Could not load limits. Try refreshing.'; }
+  finally { $('refresh-limits').disabled = false; }
+}
+bind('refresh-limits', () => refreshLimits(true));
+$('prompt').addEventListener('paste', event => {
+  const images = Array.from(event.clipboardData?.items || []).filter(item => item.kind === 'file' && item.type.startsWith('image/')).map(item => item.getAsFile()).filter(Boolean);
+  if (!images.length) return;
+  // Retain normal text insertion when a clipboard carries both text and an image.
+  if (!event.clipboardData.getData('text/plain')) event.preventDefault();
+  addFiles(images);
+});
 bind('new-project', newProject);
 bind('project-list', async e => { const el = e.target.closest('[data-project]'); if (el) await selectProject(el.dataset.project); });
 bind('search', renderProjects, 'input');
 bind('prompt', saveDraft, 'input');
 bind('model-input', () => { refreshEfforts(); saveSettings(); }, 'input');
 bind('effort-select', saveSettings, 'change');
-bind('use-saved-match', () => localStorage.setItem('math-lab:use-saved-match', String($('use-saved-match').checked)), 'change');
+bind('use-saved-match', () => localStorage.setItem('vizualearner:use-saved-match', String($('use-saved-match').checked)), 'change');
 bind('prompt-form', async e => {
   e.preventDefault(); if (!current || sending || current.status === 'generating') return;
   const message = $('prompt').value.trim();
@@ -271,7 +312,7 @@ document.addEventListener('drop', e => { if (!e.dataTransfer.files.length) retur
 document.addEventListener('click', e => { if (innerWidth <= 600 && !e.target.closest('.sidebar') && !e.target.closest('#menu-button')) $('sidebar').classList.remove('open'); });
 window.addEventListener('message', e => {
   if (e.source !== $('visualization-frame').contentWindow) return;
-  if (e.data?.type === 'math-lab-frame-loaded') {
+  if (e.data?.type === 'vizualearner-frame-loaded') {
     const measurement = frameMeasurement;
     if (!measurement || e.data.href !== measurement.url || current?.id !== measurement.projectId) return;
     frameMeasurement = null;
@@ -281,7 +322,7 @@ window.addEventListener('message', e => {
     }).catch(() => {});
     return;
   }
-  if (e.data?.type !== 'math-lab-runtime-error' || typeof e.data.message !== 'string') return;
+  if (e.data?.type !== 'vizualearner-runtime-error' || typeof e.data.message !== 'string') return;
   frameError = e.data.message.slice(0, 400);
   if (current && loadedFrame) api(`/api/projects/${current.id}/revisions/${previewRevision || current.currentRevision}/render`, { method: 'POST', body: { runtimeError: frameError } }).catch(() => {});
   $('canvas-status').textContent = 'Visualization error · ask Codex to fix it';
@@ -298,7 +339,7 @@ async function poll() {
       current = updated;
       if (previous.currentRevision !== updated.currentRevision) previewRevision = null;
       if (previous.status === 'generating' && updated.status !== 'generating') {
-        const failed = updated.status !== 'ready';
+        const failed = updated.status !== 'ready'; refreshLimits(true);
         toast(failed ? updated.messages.at(-1)?.content || 'Generation stopped.' : 'Your visualization is ready. Try it out.', failed);
         await refreshProjects(); if (tab === 'source' && !failed) { render(); await readSource(); }
       }
@@ -308,7 +349,7 @@ async function poll() {
   finally { polling = false; }
 }
 async function init() {
-  config = await api('/api/config'); renderHealth(); renderWorkspace(); await refreshProjects();
+  config = await api('/api/config'); refreshLimits(); setInterval(() => refreshLimits(), 60000); renderHealth(); renderWorkspace(); await refreshProjects();
   $('model-options').innerHTML = (config.models || []).map(m => `<option value="${escape(m.id)}"></option>`).join('');
   const selected = projects.find(p => p.id === localStorage.getItem(savedKey())) || projects[0];
   if (selected) await selectProject(selected.id); else render();

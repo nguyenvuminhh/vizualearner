@@ -13,7 +13,7 @@ npm run test:browser
 
 Review tracked/staged files and the MIT license. Never include `.local`, credentials, Codex configuration, local conversations or user attachments. Keep local workspaces backed up and excluded from source control.
 
-The test suite includes duplicate-launch/workspace ownership regressions and automated WCAG accessibility checks. CI runs on macOS and Linux. Codex CLI 0.160.0 was used for the real generation/resume smoke test; provider access and model compatibility still depend on the user's configuration. Background preparation is disabled unless `MATH_LAB_PREWARM=1` is explicitly set.
+The test suite includes duplicate-launch/workspace ownership regressions and automated WCAG accessibility checks. CI runs on macOS and Linux. Codex CLI 0.160.0 was used for the real generation/resume smoke test; provider access and model compatibility still depend on the user's configuration. Background preparation is disabled unless `VIZUALEARNER_PREWARM=1` is explicitly set.
 
 The public repository is [nguyenvuminhh/vizualearner](https://github.com/nguyenvuminhh/vizualearner). Publish reviewed updates with the authenticated GitHub CLI and Git. Keep the website source in its separate private repository. GitHub source archives contain only this app repository.
 

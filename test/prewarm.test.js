@@ -22,7 +22,7 @@ test('minimal execution excludes global workflow catalogs while retaining accoun
 });
 
 test('generator forks a ready seed, resumes only its child, and recovers a missing seed', async () => {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'math-lab-prepared-workflow-'));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'vizualearner-prepared-workflow-'));
   const generator = new Generator({ bin, timeout: 10000, prewarm: true });
   try {
     await generator.initialize(dir);
@@ -76,7 +76,7 @@ test('generator forks a ready seed, resumes only its child, and recovers a missi
 });
 
 test('preparation recovers after signing in and refreshing connection health', async () => {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'math-lab-login-test-'));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'vizualearner-login-test-'));
   const marker = path.join(dir, 'signed-in');
   const wrapper = path.join(dir, 'codex-wrapper.mjs');
   await fs.writeFile(wrapper, `#!/usr/bin/env node
@@ -100,7 +100,7 @@ const child=spawnSync(${JSON.stringify(bin)},args,{stdio:'inherit'});process.exi
 });
 
 test('one task-free seed is persisted, forked into distinct sessions and never resumed directly', async () => {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'math-lab-seed-test-'));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'vizualearner-seed-test-'));
   const pool = new SeedPool({ bin, stateDir: dir, configArgs: [] });
   try {
     const [seed, same] = await Promise.all([pool.prepare({}), pool.prepare({})]);

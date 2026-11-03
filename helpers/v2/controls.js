@@ -1,6 +1,6 @@
 export function slider(container, { label, min, max, step = 1, value = min, onChange } = {}) {
   if (![min, max, step, value].every(Number.isFinite) || min >= max || step <= 0) throw new Error('Slider needs finite bounds, a positive step, and a finite value.');
-  const element = document.createElement('label'); element.className = 'mathlab-slider';
+  const element = document.createElement('label'); element.className = 'vizualearner-slider';
   const text = document.createElement('span'); text.textContent = label;
   const range = document.createElement('input'), input = document.createElement('input');
   range.type = 'range'; input.type = 'number';

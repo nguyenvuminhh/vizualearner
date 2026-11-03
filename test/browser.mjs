@@ -8,7 +8,7 @@ import { Generator } from '../lib/generator.js';
 
 const fixture = fileURLToPath(new URL('./fake-codex.mjs', import.meta.url));
 await fs.chmod(fixture, 0o755);
-const stateDir = await fs.mkdtemp(path.join(os.tmpdir(), '.math-lab-browser-'));
+const stateDir = await fs.mkdtemp(path.join(os.tmpdir(), '.vizualearner-browser-'));
 const app = await start({ port: 0, artifactPort: 0, stateDir, generator: new Generator({ bin: fixture }) });
 const browser = await chromium.launch();
 try {
@@ -16,6 +16,12 @@ try {
   const errors = []; page.on('pageerror', error => errors.push(error.message));
   await page.goto(app.url);
   await expect(page.locator('#project-title')).toHaveText('Gradient descent, in motion');
+  await page.locator('#theme-toggle').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect(page.locator('#codex-limits')).toContainText('75% remaining');
+  await page.locator('#theme-toggle').click();
   const frame = page.frameLocator('#visualization-frame');
   await expect(frame.locator('#objective')).toHaveText('9.1400');
   await frame.locator('#step').click();
@@ -35,6 +41,13 @@ try {
   await page.locator('#new-project').click();
   await expect(page.locator('#empty-state')).toBeVisible();
   await expect(page.locator('#message-count')).toHaveText('0');
+  await page.locator('#prompt').evaluate(el => {
+    const data = new DataTransfer();
+    data.items.add(new File([new Uint8Array([137,80,78,71])], 'pasted.png', {type:'image/png'}));
+    el.dispatchEvent(new ClipboardEvent('paste', {clipboardData:data, bubbles:true, cancelable:true}));
+  });
+  await expect(page.locator('.attachment-chip')).toContainText('pasted.png');
+  await page.locator('[data-remove-file]').click();
   await page.locator('#model-input').fill('test-math-model');
   await page.locator('#effort-select').selectOption('high');
   await page.locator('#prompt').fill('Draw an interactive unit circle');

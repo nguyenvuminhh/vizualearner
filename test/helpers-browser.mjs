@@ -5,7 +5,7 @@ import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { start } from '../server.js';
 import { Generator } from '../lib/generator.js';
-const stateDir = await fs.mkdtemp(path.join(os.tmpdir(), '.math-lab-helpers-'));
+const stateDir = await fs.mkdtemp(path.join(os.tmpdir(), '.vizualearner-helpers-'));
 const fixture = fileURLToPath(new URL('./fake-codex.mjs', import.meta.url));
 await fs.chmod(fixture, 0o755);
 const app = await start({ port: 0, artifactPort: 0, stateDir, seed: false, generator: new Generator({ bin: fixture }) });
@@ -18,7 +18,7 @@ try {
   await page.locator('#prompt').fill('HELPER_TEST'); await page.locator('#generate-button').click();
   await expect(page.locator('#generate-label')).toHaveText('Update visualization', { timeout: 15000 });
   const frame = page.frameLocator('#visualization-frame');
-  await expect(frame.locator('.mathlab-slider')).toBeVisible();
+  await expect(frame.locator('.vizualearner-slider')).toBeVisible();
   await frame.locator('input[type=range]').fill('2');
   await expect(frame.locator('#value')).toHaveText('2');
   await expect(frame.locator('input[type=number]')).toHaveValue('2');
@@ -27,7 +27,7 @@ try {
   });
   expect(transform.width).toBeGreaterThan(100); expect(transform.scale).toBeGreaterThanOrEqual(1);
   const coordinates = await frame.locator('body').evaluate(async body => {
-    const { createPlot } = await import('./mathlab/v3/canvas.js');
+    const { createPlot } = await import('./vizualearner/v3/canvas.js');
     const canvas = document.createElement('canvas'); canvas.style.cssText = 'width:200px;height:200px'; body.append(canvas);
     const plot = createPlot(canvas, { bounds: [-2, 2, -2, 2] });
     const screen = plot.toScreen(1, -1), world = plot.toWorld(...screen);
@@ -40,10 +40,10 @@ try {
   const boundsBefore = await frame.locator('#plot').boundingBox();
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(async () => expect((await frame.locator('#plot').boundingBox()).width).toBeLessThan(boundsBefore.width)).toPass();
-  await page.reload(); await expect(frame.locator('.mathlab-slider')).toBeVisible();
+  await page.reload(); await expect(frame.locator('.vizualearner-slider')).toBeVisible();
   await page.locator('#source-tab').click();
   await expect(page.locator('#source-file option')).toHaveCount(5);
-  await page.locator('#source-file').selectOption('mathlab/v3/canvas.js');
+  await page.locator('#source-file').selectOption('vizualearner/v3/canvas.js');
   await expect(page.locator('#source-content')).toContainText('export function createPlot');
   expect(errors).toEqual([]);
   console.log('Vendored helpers passed: sandbox ESM/CSS, canvas rendering, synchronized slider, animation/reset, responsive resizing, source persistence and reopen.');

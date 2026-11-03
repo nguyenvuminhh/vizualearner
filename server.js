@@ -1,4 +1,5 @@
 import express from 'express';
+import { readCodexLimits } from './lib/limits.js';
 import multer from 'multer';
 import fs from 'node:fs/promises';
 import os from 'node:os';
@@ -18,9 +19,10 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 
 const localHost = host => /^(127\.0\.0\.1|localhost)(:\d+)?$/.test(host || '');
 // Raw model output stays on disk; the browser loads source separately on demand.
 const presentProject = p => ({ ...p, messages: p.messages.map(({ rawResponse, rawText, ...message }) => message) });
-const runtimeBridge = `<script>addEventListener('error',function(e){parent.postMessage({type:'math-lab-runtime-error',message:String(e.message||'A visualization resource could not load.').slice(0,400)},'*')},true);addEventListener('unhandledrejection',function(e){parent.postMessage({type:'math-lab-runtime-error',message:String(e.reason&&e.reason.message||e.reason||'An asynchronous operation failed.').slice(0,400)},'*')});addEventListener('load',function(){parent.postMessage({type:'math-lab-frame-loaded',href:location.href},'*')});</script>`;
+const frameTheme = await fs.readFile(path.join(here, 'public/frame-theme.js'), 'utf8');
+const runtimeBridge = `<script>${frameTheme}</script><script>addEventListener('error',function(e){parent.postMessage({type:'vizualearner-runtime-error',message:String(e.message||'A visualization resource could not load.').slice(0,400)},'*')},true);addEventListener('unhandledrejection',function(e){parent.postMessage({type:'vizualearner-runtime-error',message:String(e.reason&&e.reason.message||e.reason||'An asynchronous operation failed.').slice(0,400)},'*')});addEventListener('load',function(){parent.postMessage({type:'vizualearner-frame-loaded',href:location.href},'*')});</script>`;
 
-export async function start({ port = Number(process.env.PORT) || 3210, artifactPort = Number(process.env.ARTIFACT_PORT) || 3211, stateDir = process.env.MATH_LAB_STATE || path.join(here, '.local'), generator = new Generator(), seed = true } = {}) {
+export async function start({ port = Number(process.env.PORT) || 3210, artifactPort = Number(process.env.ARTIFACT_PORT) || 3211, stateDir = process.env.VIZUALEARNER_STATE || path.join(here, '.local'), generator = new Generator(), seed = true } = {}) {
   await fs.mkdir(stateDir, { recursive: true });
   const releaseState = await acquireOwnership(stateDir, 'state');
   let releaseWorkspace, server, artifactServer, ready = false;
@@ -86,6 +88,14 @@ export async function start({ port = Number(process.env.PORT) || 3210, artifactP
       next();
     });
     app.get('/api/config', async (req, res) => { await healthReady; res.json({ workspace: config.workspace, token, codex: health, models: await modelCatalog(), artifactOrigin: `http://127.0.0.1:${artifactServer.address().port}`, home: os.homedir() }); });
+    let limitsCache, limitsRequest;
+    app.get('/api/codex/limits', async (req, res) => {
+      if (!(req.query.refresh === '1' && req.headers['x-lab-token'] === token) && limitsCache && Date.now() - limitsCache.time < 30000) return res.json(limitsCache.value);
+      limitsRequest ||= readCodexLimits(generator.bin).then(value => ({ available: true, ...value })).catch(() => ({ available: false, detail: 'Account limits unavailable. ChatGPT sign-in and a compatible Codex CLI are required.' })).then(value => {
+        limitsCache = { time: Date.now(), value }; return value;
+      }).finally(() => { limitsRequest = null; });
+      res.json(await limitsRequest);
+    });
     app.post('/api/health', async (req, res) => {
       const current = await checkHealth();
       if (current.authenticated) generator.prepare();

@@ -31,13 +31,16 @@ npm install -g @openai/codex
 codex login
 ```
 
-Then use **Check connection again** in the app. Each user uses their own installed CLI, account and provider configuration. No developer API key or account credentials are included. Your own provider charges and usage limits apply. By default, the app makes AI calls only when you request a generation. Advanced users can opt into background preparation with `MATH_LAB_PREWARM=1`; this consumes account usage at startup.
+Then use **Check connection again** in the app. Each user uses their own installed CLI, account and provider configuration. No developer API key or account credentials are included. Your own provider charges and usage limits apply. By default, the app makes AI calls only when you request a generation. Advanced users can opt into background preparation with `VIZUALEARNER_PREWARM=1`; this consumes account usage at startup.
 
 Supported platforms: **macOS and Linux**. On Windows, use **WSL** and run the commands there. Native Windows startup is not currently supported.
 
 ## Use it
 
 - Open the included gradient-descent example and change the learning rate, curvature or starting point.
+- Use the theme button in the top bar for dark or light mode. Your choice is remembered; the initial theme follows your system.
+- Codex limits in the sidebar show remaining allowance and reset times from your signed-in CLI account. Use Refresh to check again (automatic checks are cached for up to 30 seconds). API-key accounts or older CLIs may not report limits.
+- Paste screenshots with **Ctrl+V / Cmd+V** in the prompt, or use the attachment button. Up to eight files, 20 MB each.
 - Choose **New Visualization** and describe an idea or attach your notes. The app creates an independent project.
 - Ask follow-up questions to update the same visualization. Use **Source** to inspect/download generated files.
 - Reopen previous projects, conversations and revisions. Use **Local workspace** to choose where your projects are saved.
@@ -69,8 +72,8 @@ After a fresh `npm start`, only runtime dependencies are installed; use `npm ci`
 | `PORT` | `3210` | Local app port |
 | `ARTIFACT_PORT` | `3211` | Separate visualization origin |
 | `CODEX_BIN` | `codex` | Installed Codex executable |
-| `MATH_LAB_STATE` | `.local` beside the app | App state directory |
-| `MATH_LAB_PREWARM` | `0` | Set `1` to opt into background preparation; consumes account usage |
+| `VIZUALEARNER_STATE` | `.local` beside the app | App state directory |
+| `VIZUALEARNER_PREWARM` | `0` | Set `1` to opt into background preparation; consumes account usage |
 | `GENERATION_TIMEOUT_MS` | `900000` | AI generation timeout |
 
 ## Source and contributions

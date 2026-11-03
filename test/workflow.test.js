@@ -13,7 +13,7 @@ const fixture = fileURLToPath(new URL('./fake-codex.mjs', import.meta.url));
 await fs.chmod(fixture, 0o755);
 const wait = ms => new Promise(r => setTimeout(r, ms));
 test('complete persistent workflow, revisions, attachments, isolation, resume, failure and restart', async t => {
-  const temp = await fs.mkdtemp(path.join(os.tmpdir(), '.math-lab-test-'));
+  const temp = await fs.mkdtemp(path.join(os.tmpdir(), '.vizualearner-test-'));
   const makeServer = () => start({ port: 0, artifactPort: 0, stateDir: temp, seed: false, generator: new Generator({ bin: fixture, timeout: 15000 }) });
   let running = await makeServer();
   t.after(async () => { await running.close(); await fs.rm(temp, { recursive: true, force: true }); });
@@ -123,7 +123,7 @@ test('source validation and symlink containment reject unsafe generated paths', 
   const source = p => [{ path: 'index.html', content: '<html>test</html>' }, { path: p, content: 'test' }];
   for (const p of ['../escape.js', '/tmp/script.js', 'a/../../escape.js', '.hidden.js', 'test.exe', 'a//b.js', 'index.html']) assert.throws(() => validSource(source(p)));
   assert.equal(validSource(source('assets/plot.js')).length, 2);
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'math-lab-path-'));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'vizualearner-path-'));
   try { await fs.mkdir(path.join(dir, 'source')); await fs.writeFile(path.join(dir, 'secret.txt'), 'secret'); await fs.symlink(path.join(dir, 'secret.txt'), path.join(dir, 'source/link.txt')); await assert.rejects(safeFile(path.join(dir, 'source'), 'link.txt')); }
   finally { await fs.rm(dir, { recursive: true, force: true }); }
 });

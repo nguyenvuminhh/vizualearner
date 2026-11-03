@@ -11,7 +11,7 @@ const stateDir = await fs.mkdtemp(path.join(os.tmpdir(), 'vizualearner-accessibi
 const app = await start({ port: 0, artifactPort: 0, stateDir, generator: new Generator({ bin: fileURLToPath(new URL('./fake-codex.mjs', import.meta.url)), prewarm: false }) });
 const browser = await chromium.launch();
 try {
-  const context = await browser.newContext({ viewport: { width: 1440, height: 1100 } });
+  const context = await browser.newContext({ viewport: { width: 1440, height: 1100 }, reducedMotion: 'reduce' });
   const page = await context.newPage();
   const scan = async name => {
     const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
@@ -20,6 +20,9 @@ try {
   await page.goto(app.url);
   await expect(page.frameLocator('#visualization-frame').locator('#objective')).toHaveText('9.1400');
   await scan('Local app and bundled example');
+  await page.locator('#theme-toggle').click();
+  await scan('Dark local app and bundled example');
+  await page.locator('#theme-toggle').click();
   await page.locator('#visual-tab').focus();
   await page.keyboard.press('ArrowRight');
   await expect(page.locator('#source-tab')).toBeFocused();

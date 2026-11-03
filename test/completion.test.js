@@ -19,7 +19,7 @@ test('completion is reported only after cleanup releases the generation slot', {
   const enteredCleanup = new Promise(resolve => { cleanupStarted = resolve; });
   // Pause real run-directory removal to make the completion race deterministic.
   fs.rm = async (file, options) => {
-    if (path.basename(String(file)).startsWith('math-lab-run-')) { cleanupStarted(); await cleanupGate; }
+    if (path.basename(String(file)).startsWith('vizualearner-run-')) { cleanupStarted(); await cleanupGate; }
     return originalRm(file, options);
   };
   const post = (route, body) => fetch(app.url + route, { method: 'POST', headers: { 'X-Lab-Token': config.token, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
